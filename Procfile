@@ -1,1 +1,1 @@
-worker: bin/eyal-shani-bot
+worker: eyal-shani-bot
