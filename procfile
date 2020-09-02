@@ -1,1 +1,1 @@
-worker: bin/eyal-shani-bot -p $PORT
+worker: eyal-shani-bot
