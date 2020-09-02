@@ -83,11 +83,11 @@ func main() {
 	for range ticker.C {
 		dish := makeDish(v)
 
-		tweet, resp, err := client.Statuses.Update(dish, nil)
+		tweet, _, err := client.Statuses.Update(dish, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
-		fmt.Println(tweet, resp)
+		log.Println(tweet.FullText)
 	}
 
 }
