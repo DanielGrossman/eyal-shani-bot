@@ -1,4 +1,4 @@
-module github.com/dg/tracer
+module github.com/DanielGrossman/eyal-shani-bot
 
 go 1.13
 

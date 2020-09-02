@@ -68,7 +68,6 @@ func main() {
 	// Twitter Client
 	client := twitter.NewClient(httpClient)
 
-	rand.Seed(time.Now().Unix())
 	v, err := getVocab()
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -79,15 +78,15 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	ticker := time.NewTicker(t * time.Second)
+	ticker := time.NewTicker(t)
 	for range ticker.C {
+		rand.Seed(time.Now().Unix())
 		dish := makeDish(v)
-
 		tweet, _, err := client.Statuses.Update(dish, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
-		log.Println(tweet.FullText)
+		log.Println(tweet)
 	}
 
 }
@@ -104,19 +103,19 @@ func makeDish(raw *Raw) string {
 	ingridientB := chooseRandomExclude(r[g.IngridientB.form][g.IngridientB.gender].IngridientB, ingridientA)
 	adjectiveB := chooseRandomExclude(r[g.AdjectiveB.form][g.AdjectiveB.gender].Adjective, adjectiveA)
 	placeB := chooseRandomExclude(raw.Vocab.Place, placeA)
-	in := chooseRandom([]string{"ב", " על"})
+	in := chooseRandom([]string{"ב", "על "})
 	from := "מ"
 
-	dish := fmt.Sprintf("%s %s %s %s %s %s %s %s %s",
+	dish := fmt.Sprintf("%s %s %s %s %s%s %s %s %s",
 		prefixA,
 		ingridientA,
 		wordOrEmpty(adjectiveA),
-		wordOrEmpty(from+placeA),
-		chooseRandom([]string{",", verb + " " + in}),
+		wordOrEmptyLowChance(from+placeA),
+		chooseRandom([]string{", ", verb + " " + in}),
 		prefixB,
 		ingridientB,
 		wordOrEmpty(adjectiveB),
-		wordOrEmpty(from+placeB))
+		wordOrEmptyLowChance(from+placeB))
 	return strings.Replace(dish, "  ", " ", -1)
 }
 
@@ -179,6 +178,10 @@ func getGrammar() grammar {
 
 func wordOrEmpty(s string) string {
 	return chooseRandom([]string{"", s})
+}
+
+func wordOrEmptyLowChance(s string) string {
+	return chooseRandom([]string{"", s, "", "", "", "", ""})
 }
 
 func chooseRandomGender() string {
