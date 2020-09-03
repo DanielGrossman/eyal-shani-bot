@@ -90,7 +90,7 @@ func main() {
 	}
 
 	rand.Seed(time.Now().Unix())
-	dish := makeDish(v, r)
+	dish := makeDish(v, &r)
 	tweet, _, err := client.Statuses.Update(dish, nil)
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -100,7 +100,7 @@ func main() {
 	ticker := time.NewTicker(t)
 	for range ticker.C {
 		rand.Seed(time.Now().Unix())
-		dish := makeDish(v, r)
+		dish := makeDish(v, &r)
 		tweet, _, err := client.Statuses.Update(dish, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)
@@ -110,17 +110,26 @@ func main() {
 
 }
 
-func makeDish(raw *Raw, rpo repo) string {
+func makeDish(raw *Raw, rpo *repo) string {
 	g := getGrammar()
 	r := raw.Vocab.Names
+
 	prefixA := randomNotInRepo(r[g.prefixA.form][g.prefixA.gender].PrefixA, rpo.Prefix)
+	rpo.Prefix = append(rpo.Prefix, prefixA)
 	ingridientA := randomNotInRepo(r[g.IngridientA.form][g.IngridientA.gender].IngridientA, rpo.Ingridient)
+	rpo.Ingridient = append(rpo.Ingridient, ingridientA)
 	adjectiveA := randomNotInRepo(r[g.AdjectiveA.form][g.AdjectiveA.gender].Adjective, rpo.Adjective)
+	rpo.Adjective = append(rpo.Adjective, adjectiveA)
 	placeA := randomNotInRepo(raw.Vocab.Place, rpo.Place)
+	rpo.Place = append(rpo.Place, placeA)
 	verb := randomNotInRepo(r[g.Verb.form][g.Verb.gender].Verb, rpo.Verb)
+	rpo.Verb = append(rpo.Verb, verb)
 	prefixB := randomNotInRepoExcluding(r[g.PrefixB.form][g.PrefixB.gender].PrefixB, rpo.Prefix, prefixA)
+	rpo.Prefix = append(rpo.Prefix, prefixB)
 	ingridientB := randomNotInRepoExcluding(r[g.IngridientB.form][g.IngridientB.gender].IngridientB, rpo.Ingridient, ingridientA)
+	rpo.Ingridient = append(rpo.Ingridient, ingridientB)
 	adjectiveB := randomNotInRepoExcluding(r[g.AdjectiveB.form][g.AdjectiveB.gender].Adjective, rpo.Adjective, adjectiveA)
+	rpo.Adjective = append(rpo.Adjective, adjectiveB)
 	placeB := randomNotInRepoExcluding(raw.Vocab.Place, rpo.Place, placeA)
 	in := chooseRandom([]string{"ב", "על "})
 
