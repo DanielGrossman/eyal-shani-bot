@@ -114,24 +114,21 @@ func makeDish(raw *Raw, rpo repo) string {
 	g := getGrammar()
 	r := raw.Vocab.Names
 	prefixA := randomNotInRepo(r[g.prefixA.form][g.prefixA.gender].PrefixA, rpo.Prefix)
-	rpo.Prefix = rpo.Prefix[len(rpo.Prefix)-5:]
 	ingridientA := randomNotInRepo(r[g.IngridientA.form][g.IngridientA.gender].IngridientA, rpo.Ingridient)
-	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-5:]
 	adjectiveA := randomNotInRepo(r[g.AdjectiveA.form][g.AdjectiveA.gender].Adjective, rpo.Adjective)
-	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-5:]
 	placeA := randomNotInRepo(raw.Vocab.Place, rpo.Place)
-	rpo.Place = rpo.Place[len(rpo.Place)-5:]
 	verb := randomNotInRepo(r[g.Verb.form][g.Verb.gender].Verb, rpo.Verb)
-	rpo.Verb = rpo.Verb[len(rpo.Verb)-5:]
 	prefixB := randomNotInRepoExcluding(r[g.PrefixB.form][g.PrefixB.gender].PrefixB, rpo.Prefix, prefixA)
-	rpo.Prefix = rpo.Prefix[len(rpo.Prefix)-5:]
 	ingridientB := randomNotInRepoExcluding(r[g.IngridientB.form][g.IngridientB.gender].IngridientB, rpo.Ingridient, ingridientA)
-	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-5:]
 	adjectiveB := randomNotInRepoExcluding(r[g.AdjectiveB.form][g.AdjectiveB.gender].Adjective, rpo.Adjective, adjectiveA)
-	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-5:]
 	placeB := randomNotInRepoExcluding(raw.Vocab.Place, rpo.Place, placeA)
-	rpo.Place = rpo.Place[len(rpo.Place)-5:]
 	in := chooseRandom([]string{"ב", "על "})
+
+	rpo.Prefix = rpo.Prefix[len(rpo.Prefix)-5:]
+	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-5:]
+	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-5:]
+	rpo.Place = rpo.Place[len(rpo.Place)-5:]
+	rpo.Verb = rpo.Verb[len(rpo.Verb)-5:]
 
 	dish := fmt.Sprintf("%s %s %s %s %s%s %s %s %s",
 		prefixA,
