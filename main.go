@@ -89,6 +89,14 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
+	rand.Seed(time.Now().Unix())
+	dish := makeDish(v, r)
+	tweet, _, err := client.Statuses.Update(dish, nil)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	log.Println(tweet)
+
 	ticker := time.NewTicker(t)
 	for range ticker.C {
 		rand.Seed(time.Now().Unix())
