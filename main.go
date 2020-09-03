@@ -19,6 +19,7 @@ const (
 	female   = "female"
 	singular = "singular"
 	plural   = "plural"
+	from     = "מ"
 )
 
 type vocabFields struct {
@@ -52,6 +53,14 @@ type grammar struct {
 	AdjectiveB  definition
 }
 
+type repo struct {
+	Prefix     []string
+	Ingridient []string
+	Adjective  []string
+	Place      []string
+	Verb       []string
+}
+
 func main() {
 	c := getConfig()
 
@@ -73,6 +82,8 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
+	r := createEmptyRepo()
+
 	t, err := time.ParseDuration(c.Period)
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -81,7 +92,7 @@ func main() {
 	ticker := time.NewTicker(t)
 	for range ticker.C {
 		rand.Seed(time.Now().Unix())
-		dish := makeDish(v)
+		dish := makeDish(v, r)
 		tweet, _, err := client.Statuses.Update(dish, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)
@@ -91,20 +102,28 @@ func main() {
 
 }
 
-func makeDish(raw *Raw) string {
+func makeDish(raw *Raw, rpo repo) string {
 	g := getGrammar()
 	r := raw.Vocab.Names
-	prefixA := chooseRandom(r[g.prefixA.form][g.prefixA.gender].PrefixA)
-	ingridientA := chooseRandom(r[g.IngridientA.form][g.IngridientA.gender].IngridientA)
-	adjectiveA := chooseRandom(r[g.AdjectiveA.form][g.AdjectiveA.gender].Adjective)
-	placeA := chooseRandom(raw.Vocab.Place)
-	verb := chooseRandom(r[g.Verb.form][g.Verb.gender].Verb)
-	prefixB := chooseRandomExclude(r[g.PrefixB.form][g.PrefixB.gender].PrefixB, prefixA)
-	ingridientB := chooseRandomExclude(r[g.IngridientB.form][g.IngridientB.gender].IngridientB, ingridientA)
-	adjectiveB := chooseRandomExclude(r[g.AdjectiveB.form][g.AdjectiveB.gender].Adjective, adjectiveA)
-	placeB := chooseRandomExclude(raw.Vocab.Place, placeA)
+	prefixA := randomNotInRepo(r[g.prefixA.form][g.prefixA.gender].PrefixA, rpo.Prefix)
+	rpo.Prefix = rpo.Prefix[len(rpo.Prefix)-5:]
+	ingridientA := randomNotInRepo(r[g.IngridientA.form][g.IngridientA.gender].IngridientA, rpo.Ingridient)
+	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-5:]
+	adjectiveA := randomNotInRepo(r[g.AdjectiveA.form][g.AdjectiveA.gender].Adjective, rpo.Adjective)
+	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-5:]
+	placeA := randomNotInRepo(raw.Vocab.Place, rpo.Place)
+	rpo.Place = rpo.Place[len(rpo.Place)-5:]
+	verb := randomNotInRepo(r[g.Verb.form][g.Verb.gender].Verb, rpo.Verb)
+	rpo.Verb = rpo.Verb[len(rpo.Verb)-5:]
+	prefixB := randomNotInRepoExcluding(r[g.PrefixB.form][g.PrefixB.gender].PrefixB, rpo.Prefix, prefixA)
+	rpo.Prefix = rpo.Prefix[len(rpo.Prefix)-5:]
+	ingridientB := randomNotInRepoExcluding(r[g.IngridientB.form][g.IngridientB.gender].IngridientB, rpo.Ingridient, ingridientA)
+	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-5:]
+	adjectiveB := randomNotInRepoExcluding(r[g.AdjectiveB.form][g.AdjectiveB.gender].Adjective, rpo.Adjective, adjectiveA)
+	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-5:]
+	placeB := randomNotInRepoExcluding(raw.Vocab.Place, rpo.Place, placeA)
+	rpo.Place = rpo.Place[len(rpo.Place)-5:]
 	in := chooseRandom([]string{"ב", "על "})
-	from := "מ"
 
 	dish := fmt.Sprintf("%s %s %s %s %s%s %s %s %s",
 		prefixA,
@@ -117,6 +136,16 @@ func makeDish(raw *Raw) string {
 		wordOrEmpty(adjectiveB),
 		wordOrEmptyLowChance(from+placeB))
 	return strings.Replace(dish, "  ", " ", -1)
+}
+
+func createEmptyRepo() repo {
+	return repo{
+		Prefix:     []string{"", "", "", "", "", ""},
+		Ingridient: []string{"", "", "", "", "", ""},
+		Adjective:  []string{"", "", "", "", "", ""},
+		Place:      []string{"", "", "", "", "", ""},
+		Verb:       []string{"", "", "", "", "", ""},
+	}
 }
 
 func getGrammar() grammar {
@@ -192,12 +221,33 @@ func chooseRandomForm() string {
 	return chooseRandom([]string{singular, plural})
 }
 
-func chooseRandomExclude(s []string, x string) string {
+func randomNotInRepo(s []string, repo []string) string {
 	var result string
 	for {
 		r := chooseRandom(s)
-		if r != x {
+		if !findInRepo(r, repo) {
 			result = r
+			break
+		}
+	}
+	return result
+}
+
+func findInRepo(s string, repo []string) bool {
+	for _, v := range repo {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
+func randomNotInRepoExcluding(s []string, r []string, x string) string {
+	var result string
+	for {
+		rand := chooseRandom(s)
+		if !findInRepo(rand, r) && rand != x {
+			result = rand
 			break
 		}
 	}
