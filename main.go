@@ -115,29 +115,29 @@ func makeDish(raw *Raw, rpo *repo) string {
 	r := raw.Vocab.Names
 
 	prefixA := randomNotInRepo(r[g.prefixA.form][g.prefixA.gender].PrefixA, rpo.Prefix)
-	rpo.Prefix = append(rpo.Prefix, prefixA)
+	rpo.Prefix = append(rpo.Prefix, string([]rune(prefixA)[:3]))
 	ingridientA := randomNotInRepo(r[g.IngridientA.form][g.IngridientA.gender].IngridientA, rpo.Ingridient)
-	rpo.Ingridient = append(rpo.Ingridient, ingridientA)
+	rpo.Ingridient = append(rpo.Ingridient, string([]rune(ingridientA)[:3]))
 	adjectiveA := randomNotInRepo(r[g.AdjectiveA.form][g.AdjectiveA.gender].Adjective, rpo.Adjective)
-	rpo.Adjective = append(rpo.Adjective, adjectiveA)
+	rpo.Adjective = append(rpo.Adjective, string([]rune(adjectiveA)[:3]))
 	placeA := randomNotInRepo(raw.Vocab.Place, rpo.Place)
-	rpo.Place = append(rpo.Place, placeA)
+	rpo.Place = append(rpo.Place, string([]rune(placeA)[:3]))
 	verb := randomNotInRepo(r[g.Verb.form][g.Verb.gender].Verb, rpo.Verb)
-	rpo.Verb = append(rpo.Verb, verb)
+	rpo.Verb = append(rpo.Verb, string([]rune(verb)[:3]))
 	prefixB := randomNotInRepoExcluding(r[g.PrefixB.form][g.PrefixB.gender].PrefixB, rpo.Prefix, prefixA)
-	rpo.Prefix = append(rpo.Prefix, prefixB)
+	rpo.Prefix = append(rpo.Prefix, string([]rune(prefixB)[:3]))
 	ingridientB := randomNotInRepoExcluding(r[g.IngridientB.form][g.IngridientB.gender].IngridientB, rpo.Ingridient, ingridientA)
-	rpo.Ingridient = append(rpo.Ingridient, ingridientB)
+	rpo.Ingridient = append(rpo.Ingridient, string([]rune(ingridientB)[:3]))
 	adjectiveB := randomNotInRepoExcluding(r[g.AdjectiveB.form][g.AdjectiveB.gender].Adjective, rpo.Adjective, adjectiveA)
-	rpo.Adjective = append(rpo.Adjective, adjectiveB)
+	rpo.Adjective = append(rpo.Adjective, string([]rune(adjectiveB)[:3]))
 	placeB := randomNotInRepoExcluding(raw.Vocab.Place, rpo.Place, placeA)
 	in := chooseRandom([]string{"ב", "על "})
 
 	rpo.Prefix = rpo.Prefix[len(rpo.Prefix)-5:]
-	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-5:]
-	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-5:]
+	rpo.Ingridient = rpo.Ingridient[len(rpo.Ingridient)-6:]
+	rpo.Adjective = rpo.Adjective[len(rpo.Adjective)-9:]
 	rpo.Place = rpo.Place[len(rpo.Place)-5:]
-	rpo.Verb = rpo.Verb[len(rpo.Verb)-5:]
+	rpo.Verb = rpo.Verb[len(rpo.Verb)-16:]
 
 	dish := fmt.Sprintf("%s %s %s %s %s%s %s %s %s",
 		prefixA,
@@ -149,16 +149,16 @@ func makeDish(raw *Raw, rpo *repo) string {
 		ingridientB,
 		wordOrEmpty(adjectiveB),
 		wordOrEmptyLowChance(from+placeB))
-	return strings.Replace(dish, "  ", " ", -1)
+	return strings.Replace(strings.Replace(strings.Replace(dish, "  ", " ", -1), "  ", " ", -1), " , ", ", ", -1)
 }
 
 func createEmptyRepo() repo {
 	return repo{
-		Prefix:     []string{"", "", "", "", "", ""},
+		Prefix:     []string{"", "", "", "", ""},
 		Ingridient: []string{"", "", "", "", "", ""},
-		Adjective:  []string{"", "", "", "", "", ""},
-		Place:      []string{"", "", "", "", "", ""},
-		Verb:       []string{"", "", "", "", "", ""},
+		Adjective:  []string{"", "", "", "", "", "", "", "", ""},
+		Place:      []string{"", "", "", "", ""},
+		Verb:       []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
 	}
 }
 
@@ -237,9 +237,15 @@ func chooseRandomForm() string {
 
 func randomNotInRepo(s []string, repo []string) string {
 	var result string
+	var i int
 	for {
+		i++
 		r := chooseRandom(s)
-		if !findInRepo(r, repo) {
+		if !findInRepo(string([]rune(r)[:3]), repo) {
+			result = r
+			break
+		}
+		if i > 50 {
 			result = r
 			break
 		}
@@ -258,9 +264,15 @@ func findInRepo(s string, repo []string) bool {
 
 func randomNotInRepoExcluding(s []string, r []string, x string) string {
 	var result string
+	var i int
 	for {
+		i++
 		rand := chooseRandom(s)
-		if !findInRepo(rand, r) && rand != x {
+		if !findInRepo(string([]rune(rand)[:3]), r) && rand != x {
+			result = rand
+			break
+		}
+		if i > 50 {
 			result = rand
 			break
 		}
